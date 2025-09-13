@@ -76,13 +76,21 @@ class PopupController {
                 this.showNotification('Please navigate to Gmail or Outlook to scan emails', 'warning');
                 return;
             }
-            await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                func: () => {
-                    const event = new CustomEvent('secureguard-manual-scan');
-                    document.dispatchEvent(event);
+            try {
+                const response = await chrome.tabs.sendMessage(tab.id, {
+                    type: 'MANUAL_SCAN_REQUEST'
+                });
+                if (!response || !response.success) {
+                    throw new Error(response?.error || 'Content script not responding. Try refreshing the Gmail page.');
                 }
-            });
+                this.showNotification('Email scan initiated', 'success');
+            }
+            catch (error) {
+                if (error instanceof Error && error.message.includes('Receiving end does not exist')) {
+                    throw new Error('Content script not loaded. Please refresh the Gmail page and try again.');
+                }
+                throw error;
+            }
             this.stats.emailsScanned++;
             await this.saveStats();
             this.updateUI();

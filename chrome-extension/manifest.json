@@ -5,7 +5,8 @@
   "description": "Detect email scams and phishing attempts in Gmail and Outlook",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://mail.google.com/*",

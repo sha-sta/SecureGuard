@@ -3,18 +3,34 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log('SecureGuard extension installed');
 });
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('SecureGuard Background: Received message:', request.type);
     if (request.type === 'ANALYZE_EMAIL') {
+        console.log('SecureGuard Background: Processing ANALYZE_EMAIL');
         analyzeEmail(request.emailData)
-            .then(response => sendResponse(response))
-            .catch(error => sendResponse({ success: false, error: error.message }));
+            .then(response => {
+            console.log('SecureGuard Background: ANALYZE_EMAIL response:', response);
+            sendResponse(response);
+        })
+            .catch(error => {
+            console.error('SecureGuard Background: ANALYZE_EMAIL error:', error);
+            sendResponse({ success: false, error: error.message });
+        });
         return true;
     }
     else if (request.type === 'ANALYZE_EMAIL_DETAILED') {
+        console.log('SecureGuard Background: Processing ANALYZE_EMAIL_DETAILED');
         analyzeEmailDetailed(request.emailData)
-            .then(response => sendResponse(response))
-            .catch(error => sendResponse({ success: false, error: error.message }));
+            .then(response => {
+            console.log('SecureGuard Background: ANALYZE_EMAIL_DETAILED response:', response);
+            sendResponse(response);
+        })
+            .catch(error => {
+            console.error('SecureGuard Background: ANALYZE_EMAIL_DETAILED error:', error);
+            sendResponse({ success: false, error: error.message });
+        });
         return true;
     }
+    console.log('SecureGuard Background: Unknown message type:', request.type);
 });
 async function analyzeEmail(emailData) {
     const API_BASE_URL = 'http://localhost:8000';
@@ -42,6 +58,8 @@ async function analyzeEmail(emailData) {
 }
 async function analyzeEmailDetailed(emailData) {
     const API_BASE_URL = 'http://localhost:8000';
+    console.log('SecureGuard Background: Making API call to:', `${API_BASE_URL}/analyze-email-detailed`);
+    console.log('SecureGuard Background: Email data being sent:', emailData);
     try {
         const response = await fetch(`${API_BASE_URL}/analyze-email-detailed`, {
             method: 'POST',
@@ -50,10 +68,14 @@ async function analyzeEmailDetailed(emailData) {
             },
             body: JSON.stringify(emailData),
         });
+        console.log('SecureGuard Background: API response status:', response.status);
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.status}`);
+            const errorText = await response.text();
+            console.error('SecureGuard Background: API error response:', errorText);
+            throw new Error(`API request failed: ${response.status} - ${errorText}`);
         }
         const result = await response.json();
+        console.log('SecureGuard Background: API success response:', result);
         const categoryScores = calculateCategoryScores(result.riskScore.factors);
         return {
             success: true,

@@ -1,11 +1,30 @@
+"use strict";
 class EmailScanner {
     constructor() {
         this.provider = null;
         this.currentEmailContainer = null;
         this.scanButton = null;
         this.reportModal = null;
+        console.log('SecureGuard: Content script loaded on:', window.location.hostname);
         this.detectProvider();
+        console.log('SecureGuard: Provider detected:', this.provider?.name);
         this.init();
+        this.setupMessageListener();
+    }
+    setupMessageListener() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            if (request.type === 'MANUAL_SCAN_REQUEST') {
+                console.log('SecureGuard: Received manual scan request from popup');
+                if (this.currentEmailContainer && this.scanButton) {
+                    this.scanCurrentEmail();
+                    sendResponse({ success: true });
+                }
+                else {
+                    sendResponse({ success: false, error: 'No email currently open' });
+                }
+                return true;
+            }
+        });
     }
     detectProvider() {
         const hostname = window.location.hostname;
@@ -14,7 +33,7 @@ class EmailScanner {
                 name: 'gmail',
                 selectors: {
                     emailContainer: '[role="main"] [jsaction*="click"]',
-                    openEmailContainer: '[role="main"] [data-message-id]',
+                    openEmailContainer: '[role="main"] [data-message-id], [role="main"] .adn, [role="main"] .ii.gt, .nH .if',
                     fromField: '[email]',
                     toField: '[email]',
                     subjectField: 'h2[data-thread-perm-id]',
@@ -338,17 +357,21 @@ class EmailScanner {
     }
     checkForOpenEmail() {
         const emailContainer = document.querySelector(this.provider.selectors.openEmailContainer);
+        console.log('SecureGuard: Checking for open email. Found container:', !!emailContainer);
         if (emailContainer && emailContainer !== this.currentEmailContainer) {
+            console.log('SecureGuard: New email detected, showing scan button');
             this.currentEmailContainer = emailContainer;
             this.showScanButton();
         }
         else if (!emailContainer && this.currentEmailContainer) {
+            console.log('SecureGuard: Email closed, hiding scan button');
             this.currentEmailContainer = null;
             this.hideScanButton();
             this.hideReport();
         }
     }
     showScanButton() {
+        console.log('SecureGuard: Creating and showing scan button');
         if (this.scanButton) {
             this.scanButton.remove();
         }
@@ -368,8 +391,11 @@ class EmailScanner {
         }
     }
     async scanCurrentEmail() {
-        if (!this.currentEmailContainer || !this.scanButton)
+        console.log('SecureGuard: Starting email scan...');
+        if (!this.currentEmailContainer || !this.scanButton) {
+            console.error('SecureGuard: Missing email container or scan button');
             return;
+        }
         this.scanButton.innerHTML = `
       <div class="spinner"></div>
       <span>Scanning...</span>
@@ -377,22 +403,28 @@ class EmailScanner {
         this.scanButton.classList.add('scanning');
         this.scanButton.disabled = true;
         try {
+            console.log('SecureGuard: Extracting email data...');
             const emailData = await this.extractEmailData(this.currentEmailContainer);
+            console.log('SecureGuard: Email data extracted:', emailData);
+            console.log('SecureGuard: Sending message to background script...');
             const response = await chrome.runtime.sendMessage({
                 type: 'ANALYZE_EMAIL_DETAILED',
                 emailData
             });
-            if (response.success) {
+            console.log('SecureGuard: Background script response:', response);
+            if (response && response.success) {
+                console.log('SecureGuard: Analysis successful, showing report...');
                 this.showDetailedReport(response);
                 this.highlightSuspiciousContent(response);
             }
             else {
-                this.showError(response.error || 'Analysis failed');
+                console.error('SecureGuard: Analysis failed:', response);
+                this.showError(response?.error || 'Analysis failed');
             }
         }
         catch (error) {
-            console.error('Error scanning email:', error);
-            this.showError('Failed to scan email');
+            console.error('SecureGuard: Error scanning email:', error);
+            this.showError(`Failed to scan email: ${error instanceof Error ? error.message : String(error)}`);
         }
         finally {
             this.scanButton.innerHTML = `
@@ -448,6 +480,10 @@ class EmailScanner {
                 recipients.push(email);
             }
         });
+        if (recipients.length === 0) {
+            recipients.push('user@example.com');
+        }
+        console.log('SecureGuard: Extracted recipients:', recipients);
         return recipients;
     }
     extractLinks(container) {
@@ -683,5 +719,4 @@ if (document.readyState === 'loading') {
 else {
     new EmailScanner();
 }
-export {};
 //# sourceMappingURL=content.js.map
