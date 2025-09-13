@@ -5,6 +5,8 @@ import time
 import logging
 from contextlib import asynccontextmanager
 
+from pydantic import BaseModel
+
 from .config import settings
 from .models import EmailData, AnalysisResponse, RiskScore, RiskFactor
 from .analyzers.header_analyzer import HeaderAnalyzer
@@ -68,6 +70,7 @@ async def health_check():
 
 @app.post("/analyze-email", response_model=AnalysisResponse)
 async def analyze_email(email_data: EmailData):
+    print(email_data.body.encode("utf-8"))
     """
     Analyze an email for potential scams and security threats.
     """
@@ -198,6 +201,21 @@ async def analyze_email_detailed(email_data: EmailData):
     # The Chrome extension will handle the detailed breakdown
     # by processing the risk factors
     return result
+
+
+class PagePayload(BaseModel):
+    url: str
+    timestamp: str
+    html: str
+
+
+@app.post("/webscrapping")
+async def webscrapping_placeholder(payload: PagePayload):
+    print("URL:", payload.url)
+    print("Timestamp:", payload.timestamp)
+    print("HTML length:", len(payload.html))
+    print(payload.html)
+    return {"status": "success"}
 
 
 if __name__ == "__main__":
