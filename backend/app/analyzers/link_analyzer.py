@@ -217,10 +217,6 @@ class LinkAnalyzer:
             if any(shortener in domain for shortener in self.url_shorteners):
                 risks.append("URL shortener detected - destination unknown")
 
-            # 4. Check for suspicious patterns in path
-            if any(keyword in path for keyword in self.phishing_keywords):
-                risks.append("Suspicious keywords in URL path")
-
             # 6. Check for IP addresses instead of domains
             if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", domain):
                 risks.append("URL uses IP address instead of domain name")
