@@ -3,7 +3,10 @@ import json
 import logging
 import asyncio
 from datetime import datetime
-from google import genai
+try:
+    from google import genai
+except ImportError:
+    import google.generativeai as genai
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, Literal
 
