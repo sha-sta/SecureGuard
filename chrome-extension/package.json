@@ -1,0 +1,16 @@
+{
+  "name": "secureguard-extension",
+  "version": "1.0.0",
+  "description": "AI-powered email scam detection Chrome extension",
+  "scripts": {
+    "build": "tsc && npm run copy-files",
+    "copy-files": "cp src/popup.html dist/ && cp src/content.css dist/ && cp manifest.json dist/",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "dev": "npm run clean && npm run build && npm run watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.0.0"
+  }
+}

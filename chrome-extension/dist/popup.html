@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      min-height: 400px;
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .stats {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .stat-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .stat-value {
+      font-weight: bold;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn.primary {
+      background: #4CAF50;
+      border-color: #45a049;
+    }
+
+    .btn.primary:hover {
+      background: #45a049;
+    }
+
+    .status {
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    .status.active {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+    }
+
+    .status.inactive {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid rgba(244, 67, 54, 0.5);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🛡️ SecureGuard</div>
+    <div class="tagline">AI-Powered Email Protection</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <span>Emails Scanned:</span>
+      <span class="stat-value" id="emails-scanned">0</span>
+    </div>
+    <div class="stat-item">
+      <span>Threats Blocked:</span>
+      <span class="stat-value" id="threats-blocked">0</span>
+    </div>
+    <div class="stat-item">
+      <span>Protection Level:</span>
+      <span class="stat-value" id="protection-level">High</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="scan-current-email">
+      📧 Scan Current Email
+    </button>
+    <button class="btn" id="toggle-protection">
+      ⚡ Toggle Protection
+    </button>
+    <button class="btn" id="view-settings">
+      ⚙️ Settings
+    </button>
+    <button class="btn" id="view-report">
+      📊 Security Report
+    </button>
+  </div>
+
+  <div class="status active" id="status">
+    ✅ Protection Active
+  </div>
+
+  <div class="footer">
+    SecureGuard v1.0.0<br>
+    Powered by AI & Machine Learning
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

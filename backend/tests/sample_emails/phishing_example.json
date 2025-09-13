@@ -1,0 +1,28 @@
+{
+  "from": "security-team@amaz0n-security.com",
+  "to": ["user@company.com"],
+  "subject": "URGENT: Your Amazon Account Will Be Suspended",
+  "body": "Dear Valued Customer,\n\nWe have detected suspicious activity on your Amazon account. Your account will be SUSPENDED within 24 hours unless you verify your information immediately.\n\nClick here to verify your account: http://amaz0n-verify.tk/login\n\nFailure to verify will result in permanent account closure. Act now to avoid losing access to your account and orders.\n\nThis is an automated message from Amazon Security Team.\n\nRegards,\nAmazon Customer Service",
+  "headers": {
+    "Authentication-Results": "spf=fail dkim=fail dmarc=fail",
+    "Received": "from suspicious-server.com [192.168.1.100] by mail.company.com",
+    "Date": "Mon, 01 Jan 2024 12:00:00 +0000"
+  },
+  "links": [
+    {
+      "url": "http://amaz0n-verify.tk/login",
+      "displayText": "Click here to verify your account",
+      "position": 0
+    }
+  ],
+  "attachments": [
+    {
+      "filename": "invoice.pdf.exe",
+      "mimeType": "application/x-msdownload",
+      "size": 2048,
+      "hash": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  ],
+  "timestamp": "2024-01-01T12:00:00Z",
+  "messageId": "suspicious-12345"
+}

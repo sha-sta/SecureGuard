@@ -1,0 +1,22 @@
+{
+  "from": "no-reply@github.com",
+  "to": ["user@company.com"],
+  "subject": "Your pull request has been merged",
+  "body": "Hello,\n\nYour pull request #123 'Fix authentication bug' has been successfully merged into the main branch.\n\nYou can view the changes at: https://github.com/yourrepo/project/pull/123\n\nThank you for your contribution!\n\nBest regards,\nGitHub Team",
+  "headers": {
+    "Authentication-Results": "spf=pass dkim=pass dmarc=pass",
+    "Received": "from github.com [140.82.112.3] by mail.company.com",
+    "Date": "Mon, 01 Jan 2024 10:00:00 +0000",
+    "Message-ID": "<github-notification-12345@github.com>"
+  },
+  "links": [
+    {
+      "url": "https://github.com/yourrepo/project/pull/123",
+      "displayText": "https://github.com/yourrepo/project/pull/123",
+      "position": 0
+    }
+  ],
+  "attachments": [],
+  "timestamp": "2024-01-01T10:00:00Z",
+  "messageId": "github-12345"
+}
