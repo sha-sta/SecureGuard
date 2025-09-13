@@ -221,10 +221,6 @@ class LinkAnalyzer:
             if any(keyword in path for keyword in self.phishing_keywords):
                 risks.append("Suspicious keywords in URL path")
 
-            # 5. Check for obfuscation techniques
-            if self._is_obfuscated_url(url):
-                risks.append("URL appears to be obfuscated")
-
             # 6. Check for IP addresses instead of domains
             if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", domain):
                 risks.append("URL uses IP address instead of domain name")
@@ -286,29 +282,6 @@ class LinkAnalyzer:
             previous_row = current_row
 
         return previous_row[-1]
-
-    def _is_obfuscated_url(self, url: str) -> bool:
-        """
-        Check if URL uses obfuscation techniques
-        """
-        # Check for URL encoding
-        if "%" in url and len(re.findall(r"%[0-9A-Fa-f]{2}", url)) > 3:
-            return True
-
-        # Check for base64 encoding in parameters
-        parsed = urlparse(url)
-        if parsed.query:
-            for param_value in parsed.query.split("&"):
-                if "=" in param_value:
-                    value = param_value.split("=")[1]
-                    if self._is_base64(value) and len(value) > 20:
-                        return True
-
-        # Check for unicode/punycode
-        if "xn--" in url:
-            return True
-
-        return False
 
     def _is_base64(self, s: str) -> bool:
         """Check if string is base64 encoded"""
