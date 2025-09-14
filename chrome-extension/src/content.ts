@@ -82,9 +82,9 @@ class EmailScanner {
   private reportModal: HTMLElement | null = null;
 
   constructor() {
-    console.log('SecureGuard: Content script loaded on:', window.location.hostname);
+    console.log('veris: Content script loaded on:', window.location.hostname);
     this.detectProvider();
-    console.log('SecureGuard: Provider detected:', this.provider?.name);
+    console.log('veris: Provider detected:', this.provider?.name);
     this.init();
     this.setupMessageListener();
   }
@@ -92,7 +92,7 @@ class EmailScanner {
   private setupMessageListener(): void {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.type === 'MANUAL_SCAN_REQUEST') {
-        console.log('SecureGuard: Received manual scan request from popup');
+        console.log('veris: Received manual scan request from popup');
         if (this.currentEmailContainer && this.scanButton) {
           this.scanCurrentEmail();
           sendResponse({ success: true });
@@ -150,10 +150,12 @@ class EmailScanner {
   private injectStyles(): void {
     const style = document.createElement('style');
     style.textContent = `
-      .secureguard-scan-button {
+      @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&display=swap');
+      
+      .veris-scan-button {
         position: fixed;
-        top: 20px;
-        right: 20px;
+        bottom: 40px;
+        right: 80px;
         background: linear-gradient(135deg, #4CAF50, #45a049);
         color: white;
         border: none;
@@ -168,24 +170,25 @@ class EmailScanner {
         display: flex;
         align-items: center;
         gap: 8px;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-scan-button:hover {
+      .veris-scan-button:hover {
         background: linear-gradient(135deg, #45a049, #3d8b40);
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
       }
 
-      .secureguard-scan-button:active {
+      .veris-scan-button:active {
         transform: translateY(0);
       }
 
-      .secureguard-scan-button.scanning {
+      .veris-scan-button.scanning {
         background: linear-gradient(135deg, #ff9800, #f57c00);
         cursor: not-allowed;
       }
 
-      .secureguard-scan-button .spinner {
+      .veris-scan-button .spinner {
         width: 16px;
         height: 16px;
         border: 2px solid #ffffff40;
@@ -199,7 +202,7 @@ class EmailScanner {
         100% { transform: rotate(360deg); }
       }
 
-      .secureguard-report-modal {
+      .veris-report-modal {
         position: fixed;
         top: 0;
         left: 0;
@@ -212,7 +215,7 @@ class EmailScanner {
         align-items: center;
       }
 
-      .secureguard-report-content {
+      .veris-report-content {
         background: white;
         border-radius: 12px;
         padding: 24px;
@@ -221,9 +224,10 @@ class EmailScanner {
         overflow-y: auto;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         position: relative;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-report-header {
+      .veris-report-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -232,14 +236,15 @@ class EmailScanner {
         border-bottom: 2px solid #f0f0f0;
       }
 
-      .secureguard-report-title {
+      .veris-report-title {
         font-size: 24px;
         font-weight: 700;
         color: #333;
         margin: 0;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-close-button {
+      .veris-close-button {
         background: #ff4444;
         color: white;
         border: none;
@@ -251,38 +256,42 @@ class EmailScanner {
         font-weight: bold;
       }
 
-      .secureguard-overall-score {
+      .veris-overall-score {
         text-align: center;
         margin-bottom: 24px;
         padding: 20px;
         border-radius: 8px;
         font-size: 18px;
         font-weight: 600;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-overall-score.high {
-        background: linear-gradient(135deg, #ff4444, #cc0000);
-        color: white;
+      .veris-overall-score.high {
+        background: rgba(255, 68, 68, 0.1);
+        color: #cc0000;
+        border: 2px solid #ff4444;
       }
 
-      .secureguard-overall-score.medium {
-        background: linear-gradient(135deg, #ff8800, #e67300);
-        color: white;
+      .veris-overall-score.medium {
+        background: rgba(255, 136, 0, 0.1);
+        color: #e67300;
+        border: 2px solid #ff8800;
       }
 
-      .secureguard-overall-score.low {
-        background: linear-gradient(135deg, #4CAF50, #45a049);
-        color: white;
+      .veris-overall-score.low {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+        border: 2px solid #4CAF50;
       }
 
-      .secureguard-category-scores {
+      .veris-category-scores {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
         margin-bottom: 24px;
       }
 
-      .secureguard-category-score {
+      .veris-category-score {
         background: #f8f9fa;
         padding: 16px;
         border-radius: 8px;
@@ -290,42 +299,98 @@ class EmailScanner {
         border: 2px solid #e9ecef;
       }
 
-      .secureguard-category-score.high {
+      .veris-category-score.high {
         border-color: #ff4444;
         background: #fff5f5;
       }
 
-      .secureguard-category-score.medium {
+      .veris-category-score.medium {
         border-color: #ff8800;
         background: #fff8f0;
       }
 
-      .secureguard-category-score.low {
+      .veris-category-score.low {
         border-color: #4CAF50;
         background: #f8fff8;
       }
 
-      .secureguard-category-score.na {
+      .veris-category-score.na {
         opacity: 0.5;
         border-color: #ccc;
         background: #f5f5f5;
       }
 
-      .secureguard-category-title {
+      .veris-category-title {
         font-weight: 600;
         font-size: 14px;
         color: #666;
         text-transform: uppercase;
         margin-bottom: 8px;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-category-value {
+      .veris-progress-container {
+        position: relative;
+        width: 100px;
+        height: 50px;
+        margin: 15px auto;
+      }
+
+      .veris-progress-svg {
+        width: 100px;
+        height: 50px;
+        transform: rotate(0deg);
+      }
+
+      .veris-progress-bg {
+        fill: none;
+        stroke: #e9ecef;
+        stroke-width: 6;
+        stroke-linecap: round;
+      }
+
+      .veris-progress-bar {
+        fill: none;
+        stroke-width: 6;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1.5s ease-in-out;
+      }
+
+      .veris-progress-bar.high {
+        stroke: #ff4444;
+      }
+
+      .veris-progress-bar.medium {
+        stroke: #ff8800;
+      }
+
+      .veris-progress-bar.low {
+        stroke: #4CAF50;
+      }
+
+      .veris-progress-bar.na {
+        stroke: #ccc;
+      }
+
+      .veris-progress-text {
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+        font-family: 'Roboto Mono', monospace;
+      }
+
+      .veris-category-value {
         font-size: 24px;
         font-weight: 700;
         color: #333;
+        font-family: 'Roboto Mono', monospace;
       }
 
-      .secureguard-gemini-section {
+      .veris-gemini-section {
         margin-bottom: 24px;
         padding: 20px;
         background: #f0f8ff;
@@ -333,7 +398,7 @@ class EmailScanner {
         border-left: 4px solid #2196F3;
       }
 
-      .secureguard-gemini-title {
+      .veris-gemini-title {
         font-size: 18px;
         font-weight: 600;
         color: #1976D2;
@@ -343,19 +408,27 @@ class EmailScanner {
         gap: 8px;
       }
 
-      .secureguard-gemini-reasoning {
+      .veris-gemini-reasoning {
         color: #333;
         line-height: 1.6;
       }
 
-      .secureguard-suspicious-highlight {
+      .veris-factors-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #cc0000;
+        margin-bottom: 12px;
+        margin-top: 0;
+      }
+
+      .veris-suspicious-highlight {
         background-color: rgba(255, 0, 0, 0.2);
         border-bottom: 2px solid #ff0000;
         cursor: help;
         position: relative;
       }
 
-      .secureguard-highlight-tooltip {
+      .veris-highlight-tooltip {
         position: absolute;
         background: #333;
         color: white;
@@ -373,18 +446,19 @@ class EmailScanner {
         transition: opacity 0.2s;
       }
 
-      .secureguard-suspicious-highlight:hover .secureguard-highlight-tooltip {
+      .veris-suspicious-highlight:hover .veris-highlight-tooltip {
         opacity: 1;
       }
 
-      .secureguard-factors-list {
-        background: #f8f9fa;
-        padding: 16px;
+      .veris-factors-list {
+        margin-bottom: 24px;
+        padding: 20px;
+        background: #fff5f5;
         border-radius: 8px;
-        margin-top: 16px;
+        border-left: 4px solid #ff4444;
       }
 
-      .secureguard-factor-item {
+      .veris-factor-item {
         padding: 8px 0;
         border-bottom: 1px solid #e9ecef;
         display: flex;
@@ -392,11 +466,11 @@ class EmailScanner {
         align-items: center;
       }
 
-      .secureguard-factor-item:last-child {
+      .veris-factor-item:last-child {
         border-bottom: none;
       }
 
-      .secureguard-factor-risk {
+      .veris-factor-risk {
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
@@ -404,17 +478,17 @@ class EmailScanner {
         text-transform: uppercase;
       }
 
-      .secureguard-factor-risk.high {
+      .veris-factor-risk.high {
         background: #ff4444;
         color: white;
       }
 
-      .secureguard-factor-risk.medium {
+      .veris-factor-risk.medium {
         background: #ff8800;
         color: white;
       }
 
-      .secureguard-factor-risk.low {
+      .veris-factor-risk.low {
         background: #4CAF50;
         color: white;
       }
@@ -444,14 +518,14 @@ class EmailScanner {
 
   private checkForOpenEmail(): void {
     const emailContainer = document.querySelector(this.provider!.selectors.openEmailContainer) as HTMLElement;
-    console.log('SecureGuard: Checking for open email. Found container:', !!emailContainer);
+    console.log('veris: Checking for open email. Found container:', !!emailContainer);
     
     if (emailContainer && emailContainer !== this.currentEmailContainer) {
-      console.log('SecureGuard: New email detected, showing scan button');
+      console.log('veris: New email detected, showing scan button');
       this.currentEmailContainer = emailContainer;
       this.showScanButton();
     } else if (!emailContainer && this.currentEmailContainer) {
-      console.log('SecureGuard: Email closed, hiding scan button');
+      console.log('veris: Email closed, hiding scan button');
       this.currentEmailContainer = null;
       this.hideScanButton();
       this.hideReport();
@@ -459,15 +533,14 @@ class EmailScanner {
   }
 
   private showScanButton(): void {
-    console.log('SecureGuard: Creating and showing scan button');
+    console.log('veris: Creating and showing scan button');
     if (this.scanButton) {
       this.scanButton.remove();
     }
 
     this.scanButton = document.createElement('button');
-    this.scanButton.className = 'secureguard-scan-button';
+    this.scanButton.className = 'veris-scan-button';
     this.scanButton.innerHTML = `
-      <span>🛡️</span>
       <span>Scan Email</span>
     `;
 
@@ -483,10 +556,10 @@ class EmailScanner {
   }
 
   private async scanCurrentEmail(): Promise<void> {
-    console.log('SecureGuard: Starting email scan...');
+    console.log('veris: Starting email scan...');
     
     if (!this.currentEmailContainer || !this.scanButton) {
-      console.error('SecureGuard: Missing email container or scan button');
+      console.error('veris: Missing email container or scan button');
       return;
     }
 
@@ -543,32 +616,31 @@ class EmailScanner {
     (this.scanButton as HTMLButtonElement).disabled = true;
 
     try {
-      console.log('SecureGuard: Extracting email data...');
+      console.log('veris: Extracting email data...');
       const emailData = await this.extractEmailData(this.currentEmailContainer);
-      console.log('SecureGuard: Email data extracted:', emailData);
+      console.log('veris: Email data extracted:', emailData);
       
-      console.log('SecureGuard: Sending message to background script...');
+      console.log('veris: Sending message to background script...');
       const response = await chrome.runtime.sendMessage({
         type: 'ANALYZE_EMAIL_DETAILED',
         emailData
       });
-      console.log('SecureGuard: Background script response:', response);
+      console.log('veris: Background script response:', response);
 
       if (response && response.success) {
-        console.log('SecureGuard: Analysis successful, showing report...');
+        console.log('veris: Analysis successful, showing report...');
         this.showDetailedReport(response);
         this.highlightSuspiciousContent(response);
       } else {
-        console.error('SecureGuard: Analysis failed:', response);
+        console.error('veris: Analysis failed:', response);
         this.showError(response?.error || 'Analysis failed');
       }
     } catch (error) {
-      console.error('SecureGuard: Error scanning email:', error);
+      console.error('veris: Error scanning email:', error);
       this.showError(`Failed to scan email: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       // Reset button
       this.scanButton.innerHTML = `
-        <span>🛡️</span>
         <span>Scan Email</span>
       `;
       this.scanButton.classList.remove('scanning');
@@ -640,7 +712,7 @@ class EmailScanner {
       recipients.push('user@example.com');
     }
 
-    console.log('SecureGuard: Extracted recipients:', recipients);
+    console.log('veris: Extracted recipients:', recipients);
     return recipients;
   }
 
@@ -779,62 +851,61 @@ class EmailScanner {
     this.hideReport(); // Remove any existing report
 
     this.reportModal = document.createElement('div');
-    this.reportModal.className = 'secureguard-report-modal';
+    this.reportModal.className = 'veris-report-modal';
     
     const overallRisk = result.riskScore.overall.toLowerCase();
     const overallIcon = result.riskScore.overall === 'HIGH' ? '⚠️' : 
                        result.riskScore.overall === 'MEDIUM' ? '⚡' : '✅';
 
     this.reportModal.innerHTML = `
-      <div class="secureguard-report-content">
-        <div class="secureguard-report-header">
-          <h2 class="secureguard-report-title">🛡️ Email Security Report</h2>
-          <button class="secureguard-close-button">×</button>
+      <div class="veris-report-content">
+        <div class="veris-report-header">
+          <h2 class="veris-report-title">Email Security Report</h2>
+          <button class="veris-close-button">×</button>
         </div>
 
-        <div class="secureguard-overall-score ${overallRisk}">
-          <div>${overallIcon} Overall Risk: ${result.riskScore.overall}</div>
-          <div>Score: ${result.riskScore.score}/100</div>
+        <div class="veris-overall-score ${overallRisk}">
+          <div>Overall Risk: ${result.riskScore.overall} ${overallIcon}</div>
+          ${this.generateProgressBar(result.riskScore.score, overallRisk)}
         </div>
 
-        <div class="secureguard-category-scores">
-          <div class="secureguard-category-score ${this.getRiskClass(result.categoryScores.header)}">
-            <div class="secureguard-category-title">Headers</div>
-            <div class="secureguard-category-value">${result.categoryScores.header !== null ? result.categoryScores.header + '/100' : 'N/A'}</div>
+        <div class="veris-category-scores">
+          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.header)}">
+            <div class="veris-category-title">Headers</div>
+            ${this.generateProgressBar(result.categoryScores.header, this.getRiskClass(result.categoryScores.header))}
           </div>
-          <div class="secureguard-category-score ${this.getRiskClass(result.categoryScores.content)}">
-            <div class="secureguard-category-title">Content</div>
-            <div class="secureguard-category-value">${result.categoryScores.content !== null ? result.categoryScores.content + '/100' : 'N/A'}</div>
+          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.content)}">
+            <div class="veris-category-title">Content</div>
+            ${this.generateProgressBar(result.categoryScores.content, this.getRiskClass(result.categoryScores.content))}
           </div>
-          <div class="secureguard-category-score ${this.getRiskClass(result.categoryScores.links)}">
-            <div class="secureguard-category-title">Links</div>
-            <div class="secureguard-category-value">${result.categoryScores.links !== null ? result.categoryScores.links + '/100' : 'N/A'}</div>
+          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.links)}">
+            <div class="veris-category-title">Links</div>
+            ${this.generateProgressBar(result.categoryScores.links, this.getRiskClass(result.categoryScores.links))}
           </div>
-          <div class="secureguard-category-score ${this.getRiskClass(result.categoryScores.attachments)}">
-            <div class="secureguard-category-title">Attachments</div>
-            <div class="secureguard-category-value">${result.categoryScores.attachments !== null ? result.categoryScores.attachments + '/100' : 'N/A'}</div>
+          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.attachments)}">
+            <div class="veris-category-title">Attachments</div>
+            ${this.generateProgressBar(result.categoryScores.attachments, this.getRiskClass(result.categoryScores.attachments))}
           </div>
         </div>
 
         ${result.geminiReasoning ? `
-        <div class="secureguard-gemini-section">
-          <div class="secureguard-gemini-title">
-            <span>🤖</span>
+        <div class="veris-gemini-section">
+          <div class="veris-gemini-title">
             <span>AI Analysis</span>
           </div>
-          <div class="secureguard-gemini-reasoning">${result.geminiReasoning}</div>
+          <div class="veris-gemini-reasoning">${result.geminiReasoning}</div>
         </div>
         ` : ''}
 
-        <div class="secureguard-factors-list">
-          <h3>Risk Factors:</h3>
+        <div class="veris-factors-list">
+          <h3 class="veris-factors-title">Risk Factors</h3>
           ${result.riskScore.factors.map(factor => `
-            <div class="secureguard-factor-item">
+            <div class="veris-factor-item">
               <div>
                 <strong>${factor.category}:</strong> ${factor.description}
                 ${factor.details ? `<br><small style="color: #666;">${factor.details}</small>` : ''}
               </div>
-              <span class="secureguard-factor-risk ${factor.risk.toLowerCase()}">${factor.risk}</span>
+              <span class="veris-factor-risk ${factor.risk.toLowerCase()}">${factor.risk}</span>
             </div>
           `).join('')}
         </div>
@@ -842,7 +913,7 @@ class EmailScanner {
     `;
 
     // Add close button functionality
-    const closeButton = this.reportModal.querySelector('.secureguard-close-button');
+    const closeButton = this.reportModal.querySelector('.veris-close-button');
     closeButton?.addEventListener('click', () => this.hideReport());
 
     // Close on backdrop click
@@ -860,6 +931,43 @@ class EmailScanner {
     if (score >= 70) return 'high';
     if (score >= 40) return 'medium';
     return 'low';
+  }
+
+  private generateProgressBar(score: number | null, riskClass: string): string {
+    if (score === null) {
+      return `
+        <div class="veris-progress-container">
+          <svg class="veris-progress-svg" viewBox="0 0 100 50">
+            <path class="veris-progress-bg" 
+                  d="M 15,45 A 35,35 0 1,1 85,45"
+                  stroke-dasharray="110"
+                  stroke-dashoffset="0"></path>
+          </svg>
+          <div class="veris-progress-text">N/A</div>
+        </div>
+      `;
+    }
+
+    // Calculate the stroke-dashoffset based on score
+    // Total path length is approximately 110 for the semicircle
+    const pathLength = 110;
+    const offset = pathLength - (score / 100) * pathLength;
+
+    return `
+      <div class="veris-progress-container">
+        <svg class="veris-progress-svg" viewBox="0 0 100 50">
+          <path class="veris-progress-bg" 
+                d="M 15,45 A 35,35 0 1,1 85,45"
+                stroke-dasharray="${pathLength}"
+                stroke-dashoffset="0"></path>
+          <path class="veris-progress-bar ${riskClass}" 
+                d="M 15,45 A 35,35 0 1,1 85,45"
+                stroke-dasharray="${pathLength}"
+                stroke-dashoffset="${offset}"></path>
+        </svg>
+        <div class="veris-progress-text">${score}%</div>
+      </div>
+    `;
   }
 
   private highlightSuspiciousContent(result: DetailedAnalysisResult): void {
@@ -909,11 +1017,11 @@ class EmailScanner {
         }
 
         const highlight = document.createElement('span');
-        highlight.className = 'secureguard-suspicious-highlight';
+        highlight.className = 'veris-suspicious-highlight';
         highlight.textContent = matchText;
         
         const tooltip = document.createElement('div');
-        tooltip.className = 'secureguard-highlight-tooltip';
+        tooltip.className = 'veris-highlight-tooltip';
         tooltip.textContent = reason;
         highlight.appendChild(tooltip);
         
@@ -948,7 +1056,7 @@ class EmailScanner {
       z-index: 10001;
       max-width: 300px;
     `;
-    errorDiv.textContent = `SecureGuard Error: ${message}`;
+    errorDiv.textContent = `veris Error: ${message}`;
     
     document.body.appendChild(errorDiv);
     

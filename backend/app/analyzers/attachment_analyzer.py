@@ -276,7 +276,10 @@ class AttachmentAnalyzer:
         Check file hash against Sophos API
         """
         try:
-            if not hasattr(settings, "SOPHOS_AUTH_TOKEN") or not settings.SOPHOS_AUTH_TOKEN:
+            if (
+                not hasattr(settings, "SOPHOS_AUTH_TOKEN")
+                or not settings.SOPHOS_AUTH_TOKEN
+            ):
                 logger.warning("Sophos API key not configured")
                 return None
 

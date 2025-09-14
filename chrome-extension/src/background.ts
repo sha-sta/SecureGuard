@@ -1,40 +1,40 @@
-// Background script for SecureGuard extension
+// Background script for veris extension
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('SecureGuard extension installed');
+  console.log('veris extension installed');
 });
 
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('SecureGuard Background: Received message:', request.type);
+  console.log('veris Background: Received message:', request.type);
   
   if (request.type === 'ANALYZE_EMAIL') {
-    console.log('SecureGuard Background: Processing ANALYZE_EMAIL');
+    console.log('veris Background: Processing ANALYZE_EMAIL');
     analyzeEmail(request.emailData)
       .then(response => {
-        console.log('SecureGuard Background: ANALYZE_EMAIL response:', response);
+        console.log('veris Background: ANALYZE_EMAIL response:', response);
         sendResponse(response);
       })
       .catch(error => {
-        console.error('SecureGuard Background: ANALYZE_EMAIL error:', error);
+        console.error('veris Background: ANALYZE_EMAIL error:', error);
         sendResponse({ success: false, error: error.message });
       });
     return true; // Keep the message channel open for async response
   } else if (request.type === 'ANALYZE_EMAIL_DETAILED') {
-    console.log('SecureGuard Background: Processing ANALYZE_EMAIL_DETAILED');
+    console.log('veris Background: Processing ANALYZE_EMAIL_DETAILED');
     analyzeEmailDetailed(request.emailData)
       .then(response => {
-        console.log('SecureGuard Background: ANALYZE_EMAIL_DETAILED response:', response);
+        console.log('veris Background: ANALYZE_EMAIL_DETAILED response:', response);
         sendResponse(response);
       })
       .catch(error => {
-        console.error('SecureGuard Background: ANALYZE_EMAIL_DETAILED error:', error);
+        console.error('veris Background: ANALYZE_EMAIL_DETAILED error:', error);
         sendResponse({ success: false, error: error.message });
       });
     return true; // Keep the message channel open for async response
   }
   
-  console.log('SecureGuard Background: Unknown message type:', request.type);
+  console.log('veris Background: Unknown message type:', request.type);
 });
 
 async function analyzeEmail(emailData: any): Promise<any> {
@@ -67,8 +67,8 @@ async function analyzeEmail(emailData: any): Promise<any> {
 async function analyzeEmailDetailed(emailData: any): Promise<any> {
   const API_BASE_URL = 'http://localhost:8000'; // Change to your backend URL
   
-  console.log('SecureGuard Background: Making API call to:', `${API_BASE_URL}/analyze-email-detailed`);
-  console.log('SecureGuard Background: Email data being sent:', emailData);
+  console.log('veris Background: Making API call to:', `${API_BASE_URL}/analyze-email-detailed`);
+  console.log('veris Background: Email data being sent:', emailData);
   
   try {
     const response = await fetch(`${API_BASE_URL}/analyze-email-detailed`, {
@@ -79,16 +79,16 @@ async function analyzeEmailDetailed(emailData: any): Promise<any> {
       body: JSON.stringify(emailData),
     });
 
-    console.log('SecureGuard Background: API response status:', response.status);
+    console.log('veris Background: API response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('SecureGuard Background: API error response:', errorText);
+      console.error('veris Background: API error response:', errorText);
       throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('SecureGuard Background: API success response:', result);
+    console.log('veris Background: API success response:', result);
     
     // Transform the result to match our detailed interface
     const categoryScores = calculateCategoryScores(result.riskScore.factors);
