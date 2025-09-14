@@ -45,10 +45,10 @@ class Settings(BaseSettings):
     ANALYSIS_TIMEOUT: int = 30  # seconds
 
     # Risk Scoring Weights
-    HEADER_ANALYSIS_WEIGHT: float = 0.25
-    LINK_ANALYSIS_WEIGHT: float = 0.30
+    HEADER_ANALYSIS_WEIGHT: float = 0.0
+    LINK_ANALYSIS_WEIGHT: float = 0.0
     ATTACHMENT_ANALYSIS_WEIGHT: float = 0.20
-    CONTENT_ANALYSIS_WEIGHT: float = 0.25
+    CONTENT_ANALYSIS_WEIGHT: float = 0.4
 
     # Thresholds
     LOW_RISK_THRESHOLD: int = 30

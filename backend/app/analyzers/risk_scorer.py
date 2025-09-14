@@ -168,18 +168,21 @@ class RiskScorer:
 
         for category, weight in self.category_weights.items():
             score = category_scores.get(category, 0.0)
-            weighted_sum += score * weight
-            total_weight += weight
+            if score > 0:
+                weighted_sum += score * weight
+                total_weight += weight
+                print(score, weight)
 
         if total_weight == 0:
             return 0.0
 
         overall_score = weighted_sum / total_weight
+        print(overall_score)
 
-        # Apply bonuses/penalties for specific combinations
-        overall_score = self._apply_combination_adjustments(
-            overall_score, category_scores
-        )
+        # # Apply bonuses/penalties for specific combinations
+        # overall_score = self._apply_combination_adjustments(
+        #     overall_score, category_scores
+        # )
 
         return min(100.0, max(0.0, overall_score))
 

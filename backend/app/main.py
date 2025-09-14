@@ -311,6 +311,7 @@ async def webscrapping(payload: PagePayload):
 
 @app.post("/analyze-email-from-html", response_model=AnalysisResponse)
 async def analyze_email_from_html(payload: PagePayload):
+    print("here")
     """
     Extract email content from HTML and analyze it for security threats
     """
