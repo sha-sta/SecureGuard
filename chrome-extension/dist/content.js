@@ -735,9 +735,9 @@ class EmailScanner {
             <div class="veris-category-title">Content</div>
             ${this.generateProgressBar(result.categoryScores.content, this.getRiskClass(result.categoryScores.content))}
           </div>
-          <div class="veris-category-score ${"HIGH"}">
+          <div class="veris-category-score ${"high"}">
             <div class="veris-category-title">Links</div>
-            ${this.generateProgressBar(92, "HIGH")}
+            ${this.generateProgressBar(92, "high")}
           </div>
           <div class="veris-category-score ${this.getRiskClass(result.categoryScores.attachments)}">
             <div class="veris-category-title">Attachments</div>

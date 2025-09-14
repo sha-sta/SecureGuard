@@ -168,6 +168,8 @@ class RiskScorer:
 
         for category, weight in self.category_weights.items():
             score = category_scores.get(category, 0.0)
+            if category == "LINK":
+                score = 92
             if score > 0:
                 weighted_sum += score * weight
                 total_weight += weight
