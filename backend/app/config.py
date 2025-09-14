@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # Risk Scoring Weights
     HEADER_ANALYSIS_WEIGHT: float = 0.0
-    LINK_ANALYSIS_WEIGHT: float = 0.0
+    LINK_ANALYSIS_WEIGHT: float = 0.4
     ATTACHMENT_ANALYSIS_WEIGHT: float = 0.20
     CONTENT_ANALYSIS_WEIGHT: float = 0.4
 
