@@ -1,2 +1,4 @@
 backend/venv
 chrome-extension/node_modules
+.env.local
+__pycache__

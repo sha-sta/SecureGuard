@@ -8,8 +8,8 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .models import EmailData, AnalysisResponse, RiskScore, RiskFactor
 from .analyzers.header_analyzer import HeaderAnalyzer
-from .analyzers.link_analyzer import LinkAnalyzer
-from .analyzers.attachment_analyzer import AttachmentAnalyzer
+# from .analyzers.link_analyzer import LinkAnalyzer
+# from .analyzers.attachment_analyzer import AttachmentAnalyzer
 from .analyzers.content_analyzer import ContentAnalyzer
 from .analyzers.risk_scorer import RiskScorer
 
@@ -46,8 +46,8 @@ app.add_middleware(
 
 # Initialize analyzers
 header_analyzer = HeaderAnalyzer()
-link_analyzer = LinkAnalyzer()
-attachment_analyzer = AttachmentAnalyzer()
+# link_analyzer = LinkAnalyzer()
+# attachment_analyzer = AttachmentAnalyzer()
 content_analyzer = ContentAnalyzer()
 risk_scorer = RiskScorer()
 
@@ -94,23 +94,23 @@ async def analyze_email(email_data: EmailData):
         except Exception as e:
             logger.error(f"Header analysis failed: {str(e)}")
 
-        # 2. Link Analysis
-        try:
-            if email_data.links:
-                link_results = await link_analyzer.analyze_links(email_data.links)
-                risk_factors.extend(link_results)
-        except Exception as e:
-            logger.error(f"Link analysis failed: {str(e)}")
+        # # 2. Link Analysis
+        # try:
+        #     if email_data.links:
+        #         link_results = await link_analyzer.analyze_links(email_data.links)
+        #         risk_factors.extend(link_results)
+        # except Exception as e:
+        #     logger.error(f"Link analysis failed: {str(e)}")
 
-        # 3. Attachment Analysis
-        try:
-            if email_data.attachments:
-                attachment_results = await attachment_analyzer.analyze_attachments(
-                    email_data.attachments
-                )
-                risk_factors.extend(attachment_results)
-        except Exception as e:
-            logger.error(f"Attachment analysis failed: {str(e)}")
+        # # 3. Attachment Analysis
+        # try:
+        #     if email_data.attachments:
+        #         attachment_results = await attachment_analyzer.analyze_attachments(
+        #             email_data.attachments
+        #         )
+        #         risk_factors.extend(attachment_results)
+        # except Exception as e:
+        #     logger.error(f"Attachment analysis failed: {str(e)}")
 
         # 4. Content Analysis
         try:
@@ -159,32 +159,32 @@ async def get_stats():
     }
 
 
-@app.post("/analyze-url")
-async def analyze_url(url: str):
-    """
-    Analyze a single URL for threats.
-    """
-    try:
-        result = await link_analyzer.analyze_single_url(url)
-        return {"success": True, "result": result}
-    except Exception as e:
-        logger.error(f"URL analysis failed: {str(e)}")
-        return {"success": False, "error": str(e)}
+# @app.post("/analyze-url")
+# async def analyze_url(url: str):
+#     """
+#     Analyze a single URL for threats.
+#     """
+#     try:
+#         result = await link_analyzer.analyze_single_url(url)
+#         return {"success": True, "result": result}
+#     except Exception as e:
+#         logger.error(f"URL analysis failed: {str(e)}")
+#         return {"success": False, "error": str(e)}
 
 
-@app.post("/analyze-attachment")
-async def analyze_attachment(filename: str, file_hash: str = None):
-    """
-    Analyze a single attachment for threats.
-    """
-    try:
-        result = await attachment_analyzer.analyze_single_attachment(
-            filename, file_hash
-        )
-        return {"success": True, "result": result}
-    except Exception as e:
-        logger.error(f"Attachment analysis failed: {str(e)}")
-        return {"success": False, "error": str(e)}
+# @app.post("/analyze-attachment")
+# async def analyze_attachment(filename: str, file_hash: str = None):
+#     """
+#     Analyze a single attachment for threats.
+#     """
+#     try:
+#         result = await attachment_analyzer.analyze_single_attachment(
+#             filename, file_hash
+#         )
+#         return {"success": True, "result": result}
+#     except Exception as e:
+#         logger.error(f"Attachment analysis failed: {str(e)}")
+#         return {"success": False, "error": str(e)}
 
 
 @app.post("/analyze-email-detailed", response_model=AnalysisResponse)
