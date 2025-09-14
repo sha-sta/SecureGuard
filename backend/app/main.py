@@ -128,6 +128,7 @@ async def analyze_email(email_data: EmailData):
             logger.error(f"Content analysis failed: {str(e)}")
 
         # 5. Calculate overall risk score
+        print(risk_factors)
         risk_score = risk_scorer.calculate_risk_score(risk_factors)
 
         processing_time = time.time() - start_time

@@ -753,9 +753,10 @@ class EmailScanner {
           <div class="veris-gemini-title">
             <span>AI Analysis</span>
           </div>
-          <div class="veris-gemini-reasoning">${result.geminiReasoning}</div>
+          <div class="veris-gemini-reasoning">${result.riskScore.factors[result.riskScore.factors.length-1].description}</div>
         </div>
         ` : ''}
+        
 
         <div class="veris-factors-list">
           <h3 class="veris-factors-title">Risk Factors</h3>

@@ -1199,25 +1199,6 @@ class EmailScanner {
           ${this.generateProgressBar(result.riskScore.score, overallRisk)}
         </div>
 
-        <div class="veris-category-scores">
-          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.header)}">
-            <div class="veris-category-title">Headers</div>
-            ${this.generateProgressBar(result.categoryScores.header, this.getRiskClass(result.categoryScores.header))}
-          </div>
-          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.content)}">
-            <div class="veris-category-title">Content</div>
-            ${this.generateProgressBar(result.categoryScores.content, this.getRiskClass(result.categoryScores.content))}
-          </div>
-          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.links)}">
-            <div class="veris-category-title">Links</div>
-            ${this.generateProgressBar(result.categoryScores.links, this.getRiskClass(result.categoryScores.links))}
-          </div>
-          <div class="veris-category-score ${this.getRiskClass(result.categoryScores.attachments)}">
-            <div class="veris-category-title">Attachments</div>
-            ${this.generateProgressBar(result.categoryScores.attachments, this.getRiskClass(result.categoryScores.attachments))}
-          </div>
-        </div>
-
         ${result.geminiReasoning ? `
         <div class="veris-gemini-section">
           <div class="veris-gemini-title">
