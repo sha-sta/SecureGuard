@@ -120,15 +120,11 @@ class ContentAnalyzer:
             # Combine subject and body for analysis
             full_content = f"Subject: {subject}\n\nBody: {body}"
 
-            # 1. AI-powered analysis using Gemini
+            # AI-powered analysis using Gemini
             if settings.GEMINI_API_KEY:
                 ai_risks = await self._gemini_analysis(subject, body)
                 if ai_risks:
                     risk_factors.extend(ai_risks)
-
-            # 2. Pattern-based analysis for fallback/enhancement
-            pattern_risks = self._pattern_based_analysis(subject, body)
-            risk_factors.extend(pattern_risks)
 
         except Exception as e:
             logger.error(f"Content analysis error: {str(e)}")
@@ -139,111 +135,6 @@ class ContentAnalyzer:
                     score=40,
                     description="Content analysis failed due to technical error",
                     details=str(e),
-                )
-            )
-
-        return risk_factors
-
-    def _pattern_based_analysis(self, subject: str, body: str) -> List[RiskFactor]:
-        """
-        Pattern-based analysis for common phishing indicators
-        """
-        risk_factors = []
-        full_content = f"{subject} {body}".lower()
-
-        # Check for urgency indicators
-        urgency_keywords = [
-            "urgent",
-            "immediate",
-            "expires",
-            "deadline",
-            "act now",
-            "limited time",
-        ]
-        urgency_count = sum(
-            1 for keyword in urgency_keywords if keyword in full_content
-        )
-
-        if urgency_count >= 2:
-            risk_factors.append(
-                RiskFactor(
-                    category="CONTENT",
-                    risk="MEDIUM",
-                    score=55,
-                    description=f"Multiple urgency indicators detected ({urgency_count} found)",
-                    details="Email uses pressure tactics to force quick action",
-                )
-            )
-
-        # Check for threat language
-        threat_keywords = [
-            "suspend",
-            "suspended",
-            "close",
-            "terminate",
-            "lock",
-            "block",
-        ]
-        threat_count = sum(1 for keyword in threat_keywords if keyword in full_content)
-
-        if threat_count >= 1:
-            risk_factors.append(
-                RiskFactor(
-                    category="CONTENT",
-                    risk="HIGH",
-                    score=70,
-                    description=f"Account threat language detected ({threat_count} threats)",
-                    details="Email threatens account suspension or closure",
-                )
-            )
-
-        # Check for financial keywords + action words combination
-        financial_keywords = [
-            "bank",
-            "account",
-            "credit card",
-            "payment",
-            "refund",
-            "money",
-        ]
-        action_keywords = ["verify", "confirm", "update", "click here", "login"]
-
-        financial_count = sum(
-            1 for keyword in financial_keywords if keyword in full_content
-        )
-        action_count = sum(1 for keyword in action_keywords if keyword in full_content)
-
-        if financial_count >= 2 and action_count >= 2:
-            risk_factors.append(
-                RiskFactor(
-                    category="CONTENT",
-                    risk="HIGH",
-                    score=65,
-                    description="Financial scam indicators detected",
-                    details=f"Financial terms: {financial_count}, Action words: {action_count}",
-                )
-            )
-
-        # Check for brand impersonation
-        brand_keywords = [
-            "amazon",
-            "paypal",
-            "microsoft",
-            "apple",
-            "google",
-            "bank",
-            "security team",
-        ]
-        brand_count = sum(1 for keyword in brand_keywords if keyword in full_content)
-
-        if brand_count >= 1:
-            risk_factors.append(
-                RiskFactor(
-                    category="CONTENT",
-                    risk="HIGH",
-                    score=70,
-                    description="Brand impersonation detected",
-                    details="Email may be impersonating a legitimate organization",
                 )
             )
 

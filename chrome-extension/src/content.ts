@@ -490,6 +490,50 @@ class EmailScanner {
       return;
     }
 
+    // Use web scraping to extract and analyze email content directly
+    try {
+      const payload = {
+        url: location.href,
+        timestamp: new Date().toISOString(),
+        html: document.documentElement.outerHTML
+      };
+
+      console.log('SecureGuard: Sending HTML for analysis...');
+      const analysisResponse = await fetch('http://localhost:8000/analyze-email-from-html', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (!analysisResponse.ok) {
+        throw new Error(`Analysis failed: HTTP ${analysisResponse.status}`);
+      }
+
+      const analysisResult = await analysisResponse.json();
+      console.log('SecureGuard: Analysis result:', analysisResult);
+
+      if (analysisResult.success) {
+        // Convert backend response to match expected format
+        const detailedResult = {
+          success: true,
+          riskScore: analysisResult.riskScore,
+          categoryScores: this.calculateCategoryScores(analysisResult.riskScore.factors),
+          geminiReasoning: this.extractGeminiReasoning(analysisResult.riskScore.factors),
+          suspiciousTextRanges: [] // We'll implement this later
+        };
+
+        this.showDetailedReport(detailedResult);
+        this.highlightSuspiciousContent(detailedResult);
+        return; // Exit early since we got the result
+      } else {
+        throw new Error(analysisResult.error || 'Analysis failed');
+      }
+    } catch (htmlAnalysisError) {
+      console.error('SecureGuard: HTML analysis failed, falling back to DOM extraction:', htmlAnalysisError);
+      // Fall back to the original DOM-based extraction method
+    }
+
+
     // Update button to show scanning state
     this.scanButton.innerHTML = `
       <div class="spinner"></div>
@@ -688,6 +732,47 @@ class EmailScanner {
     };
     
     return mimeTypes[extension] || 'application/octet-stream';
+  }
+
+  private calculateCategoryScores(factors: RiskFactor[]): {
+    header: number | null;
+    content: number | null;
+    links: number | null;
+    attachments: number | null;
+  } {
+    const categories = {
+      header: [] as number[],
+      content: [] as number[],
+      links: [] as number[],
+      attachments: [] as number[]
+    };
+
+    factors.forEach(factor => {
+      const category = factor.category.toLowerCase() as keyof typeof categories;
+      if (categories[category]) {
+        categories[category].push(factor.score);
+      }
+    });
+
+    return {
+      header: categories.header.length > 0 ? Math.max(...categories.header) : null,
+      content: categories.content.length > 0 ? Math.max(...categories.content) : null,
+      links: categories.links.length > 0 ? Math.max(...categories.links) : null,
+      attachments: categories.attachments.length > 0 ? Math.max(...categories.attachments) : null
+    };
+  }
+
+  private extractGeminiReasoning(factors: RiskFactor[]): string {
+    const aiFactors = factors.filter(factor => 
+      factor.description.includes('AI Analysis:') || 
+      factor.description.includes('Gemini')
+    );
+
+    if (aiFactors.length > 0) {
+      return aiFactors.map(factor => factor.description.replace('AI Analysis: ', '')).join(' ');
+    }
+
+    return 'No AI analysis available for this email.';
   }
 
   private showDetailedReport(result: DetailedAnalysisResult): void {

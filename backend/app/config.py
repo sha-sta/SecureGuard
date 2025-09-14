@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     VIRUSTOTAL_API_KEY: Optional[str] = None
     GOOGLE_SAFE_BROWSING_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
+    SOPHOS_AUTH_TOKEN: Optional[str] = None
 
     # Database Configuration (for future use)
     DATABASE_URL: Optional[str] = None
@@ -56,6 +57,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra fields in .env file
 
 
 # Global settings instance

@@ -1,5 +1,4 @@
 "use strict";
-
 class EmailScanner {
     constructor() {
         this.provider = null;
@@ -12,22 +11,21 @@ class EmailScanner {
         this.init();
         this.setupMessageListener();
     }
-
     setupMessageListener() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.type === 'MANUAL_SCAN_REQUEST') {
                 console.log('SecureGuard: Received manual scan request from popup');
                 if (this.currentEmailContainer && this.scanButton) {
                     this.scanCurrentEmail();
-                    sendResponse({success: true});
-                } else {
-                    sendResponse({success: false, error: 'No email currently open'});
+                    sendResponse({ success: true });
+                }
+                else {
+                    sendResponse({ success: false, error: 'No email currently open' });
                 }
                 return true;
             }
         });
     }
-
     detectProvider() {
         const hostname = window.location.hostname;
         if (hostname.includes('mail.google.com')) {
@@ -45,7 +43,8 @@ class EmailScanner {
                     headerContainer: '[role="main"]'
                 }
             };
-        } else if (hostname.includes('outlook.live.com') || hostname.includes('outlook.office.com')) {
+        }
+        else if (hostname.includes('outlook.live.com') || hostname.includes('outlook.office.com')) {
             this.provider = {
                 name: 'outlook',
                 selectors: {
@@ -62,14 +61,12 @@ class EmailScanner {
             };
         }
     }
-
     init() {
         if (!this.provider)
             return;
         this.injectStyles();
         this.observeForOpenEmails();
     }
-
     injectStyles() {
         const style = document.createElement('style');
         style.textContent = `
@@ -344,12 +341,11 @@ class EmailScanner {
     `;
         document.head.appendChild(style);
     }
-
     observeForOpenEmails() {
         const observer = new MutationObserver(() => {
             this.checkForOpenEmail();
         });
-        observer.observe(document.body, {childList: true, subtree: true});
+        observer.observe(document.body, { childList: true, subtree: true });
         let currentUrl = window.location.href;
         setInterval(() => {
             if (window.location.href !== currentUrl) {
@@ -359,7 +355,6 @@ class EmailScanner {
         }, 1000);
         setTimeout(() => this.checkForOpenEmail(), 1000);
     }
-
     checkForOpenEmail() {
         const emailContainer = document.querySelector(this.provider.selectors.openEmailContainer);
         console.log('SecureGuard: Checking for open email. Found container:', !!emailContainer);
@@ -367,14 +362,14 @@ class EmailScanner {
             console.log('SecureGuard: New email detected, showing scan button');
             this.currentEmailContainer = emailContainer;
             this.showScanButton();
-        } else if (!emailContainer && this.currentEmailContainer) {
+        }
+        else if (!emailContainer && this.currentEmailContainer) {
             console.log('SecureGuard: Email closed, hiding scan button');
             this.currentEmailContainer = null;
             this.hideScanButton();
             this.hideReport();
         }
     }
-
     showScanButton() {
         console.log('SecureGuard: Creating and showing scan button');
         if (this.scanButton) {
@@ -389,46 +384,53 @@ class EmailScanner {
         this.scanButton.addEventListener('click', () => this.scanCurrentEmail());
         document.body.appendChild(this.scanButton);
     }
-
     hideScanButton() {
         if (this.scanButton) {
             this.scanButton.remove();
             this.scanButton = null;
         }
     }
-
     async scanCurrentEmail() {
         console.log('SecureGuard: Starting email scan...');
-
-
-        // -----------------------Direct HTML Retrieval ----------------------------
-        const payload = {
-            url: location.href,
-            timestamp: new Date().toISOString(),
-            html: document.documentElement.outerHTML
-        };
-
-        try {
-            console.log(JSON.stringify(payload))
-            const resp = await fetch('http://localhost:8000/webscrapping', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-            setTimeout( 2000);
-        } catch (err) {
-            console.error('[send-page] failed:', err);
-            alert('Could not send page:\n' + err.message);
-        }
-        // ------------------------------------------------------------------------------
-
-
         if (!this.currentEmailContainer || !this.scanButton) {
             console.error('SecureGuard: Missing email container or scan button');
             return;
+        }
+        try {
+            const payload = {
+                url: location.href,
+                timestamp: new Date().toISOString(),
+                html: document.documentElement.outerHTML
+            };
+            console.log('SecureGuard: Sending HTML for analysis...');
+            const analysisResponse = await fetch('http://localhost:8000/analyze-email-from-html', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!analysisResponse.ok) {
+                throw new Error(`Analysis failed: HTTP ${analysisResponse.status}`);
+            }
+            const analysisResult = await analysisResponse.json();
+            console.log('SecureGuard: Analysis result:', analysisResult);
+            if (analysisResult.success) {
+                const detailedResult = {
+                    success: true,
+                    riskScore: analysisResult.riskScore,
+                    categoryScores: this.calculateCategoryScores(analysisResult.riskScore.factors),
+                    geminiReasoning: this.extractGeminiReasoning(analysisResult.riskScore.factors),
+                    suspiciousTextRanges: []
+                };
+                this.showDetailedReport(detailedResult);
+                this.highlightSuspiciousContent(detailedResult);
+                return;
+            }
+            else {
+                throw new Error(analysisResult.error || 'Analysis failed');
+            }
+        }
+        catch (htmlAnalysisError) {
+            console.error('SecureGuard: HTML analysis failed, falling back to DOM extraction:', htmlAnalysisError);
         }
         this.scanButton.innerHTML = `
       <div class="spinner"></div>
@@ -450,14 +452,17 @@ class EmailScanner {
                 console.log('SecureGuard: Analysis successful, showing report...');
                 this.showDetailedReport(response);
                 this.highlightSuspiciousContent(response);
-            } else {
+            }
+            else {
                 console.error('SecureGuard: Analysis failed:', response);
                 this.showError(response?.error || 'Analysis failed');
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('SecureGuard: Error scanning email:', error);
             this.showError(`Failed to scan email: ${error instanceof Error ? error.message : String(error)}`);
-        } finally {
+        }
+        finally {
             this.scanButton.innerHTML = `
         <span>🛡️</span>
         <span>Scan Email</span>
@@ -466,7 +471,6 @@ class EmailScanner {
             this.scanButton.disabled = false;
         }
     }
-
     async extractEmailData(container) {
         const fromElement = container.querySelector(this.provider.selectors.fromField);
         const subjectElement = container.querySelector(this.provider.selectors.subjectField);
@@ -487,7 +491,6 @@ class EmailScanner {
         };
         return emailData;
     }
-
     extractHeaders(container) {
         const headers = {};
         const fromElement = container.querySelector('[email]');
@@ -504,7 +507,6 @@ class EmailScanner {
         }
         return headers;
     }
-
     extractRecipients(container) {
         const recipients = [];
         const toElements = container.querySelectorAll('[email]');
@@ -520,7 +522,6 @@ class EmailScanner {
         console.log('SecureGuard: Extracted recipients:', recipients);
         return recipients;
     }
-
     extractLinks(container) {
         const links = container.querySelectorAll(this.provider.selectors.linkSelector);
         const linkData = [];
@@ -536,7 +537,6 @@ class EmailScanner {
         });
         return linkData;
     }
-
     async extractAttachments(container) {
         const attachments = container.querySelectorAll(this.provider.selectors.attachmentContainer);
         const attachmentData = [];
@@ -573,7 +573,6 @@ class EmailScanner {
         }
         return attachmentData;
     }
-
     getMimeTypeFromExtension(extension) {
         const mimeTypes = {
             'pdf': 'application/pdf',
@@ -597,7 +596,34 @@ class EmailScanner {
         };
         return mimeTypes[extension] || 'application/octet-stream';
     }
-
+    calculateCategoryScores(factors) {
+        const categories = {
+            header: [],
+            content: [],
+            links: [],
+            attachments: []
+        };
+        factors.forEach(factor => {
+            const category = factor.category.toLowerCase();
+            if (categories[category]) {
+                categories[category].push(factor.score);
+            }
+        });
+        return {
+            header: categories.header.length > 0 ? Math.max(...categories.header) : null,
+            content: categories.content.length > 0 ? Math.max(...categories.content) : null,
+            links: categories.links.length > 0 ? Math.max(...categories.links) : null,
+            attachments: categories.attachments.length > 0 ? Math.max(...categories.attachments) : null
+        };
+    }
+    extractGeminiReasoning(factors) {
+        const aiFactors = factors.filter(factor => factor.description.includes('AI Analysis:') ||
+            factor.description.includes('Gemini'));
+        if (aiFactors.length > 0) {
+            return aiFactors.map(factor => factor.description.replace('AI Analysis: ', '')).join(' ');
+        }
+        return 'No AI analysis available for this email.';
+    }
     showDetailedReport(result) {
         this.hideReport();
         this.reportModal = document.createElement('div');
@@ -669,7 +695,6 @@ class EmailScanner {
         });
         document.body.appendChild(this.reportModal);
     }
-
     getRiskClass(score) {
         if (score === null)
             return 'na';
@@ -679,7 +704,6 @@ class EmailScanner {
             return 'medium';
         return 'low';
     }
-
     highlightSuspiciousContent(result) {
         if (!result.suspiciousTextRanges || !this.currentEmailContainer)
             return;
@@ -694,7 +718,6 @@ class EmailScanner {
             this.highlightTextInElement(bodyElement, highlight.text, highlight.reason);
         });
     }
-
     highlightTextInElement(element, searchText, reason) {
         const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
         const textNodes = [];
@@ -728,14 +751,12 @@ class EmailScanner {
             }
         });
     }
-
     hideReport() {
         if (this.reportModal) {
             this.reportModal.remove();
             this.reportModal = null;
         }
     }
-
     showError(message) {
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = `
@@ -756,10 +777,10 @@ class EmailScanner {
         }, 5000);
     }
 }
-
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => new EmailScanner());
-} else {
+}
+else {
     new EmailScanner();
 }
 //# sourceMappingURL=content.js.map
