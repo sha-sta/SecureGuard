@@ -63,14 +63,17 @@ class ContentAnalyzer:
             1. Risk level assessment (LOW, MEDIUM, HIGH)
             2. Confidence percentage (0-100)
             3. Specific suspicious elements found
-            4. Brief explanation of the assessment
-            
+            4. Brief explanation of the assessment (tailored towards nontechnical boomers) with bullet points
+
             Focus on indicators like:
             - Urgency language ("act now", "limited time")
             - Threats ("account suspended", "verify immediately")
             - Financial requests or suspicious links
             - Brand impersonation attempts
             - Grammar and spelling inconsistencies
+            - Unusual sender behavior or context
+
+            But also consider context and subtle cues, for example, does the request a casual message from a known contact?
             
             Return a JSON array with one analysis object matching the GeminiAnalysis schema.
             """
