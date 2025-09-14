@@ -125,6 +125,7 @@ function calculateCategoryScores(factors: any[]): any {
       const avgScore = categoryFactors.reduce((sum, f) => sum + f.score, 0) / categoryFactors.length;
       const finalScore = Math.round((maxScore + avgScore) / 2);
       
+      // Map backend categories to frontend score keys
       switch(category) {
         case 'HEADER':
           scores.header = finalScore;
@@ -133,7 +134,7 @@ function calculateCategoryScores(factors: any[]): any {
           scores.content = finalScore;
           break;
         case 'LINK':
-          scores.links = finalScore;
+          scores.links = finalScore; // Backend sends 'LINK', frontend expects 'links'
           break;
         case 'ATTACHMENT':
           scores.attachments = finalScore;

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # External API Keys
     VIRUSTOTAL_API_KEY: Optional[str] = None
     GOOGLE_SAFE_BROWSING_API_KEY: Optional[str] = None
+    GOOGLE_WEB_RISK_API_KEY: Optional[str] = None
     GEMINI_API_KEY: Optional[str] = None
     SOPHOS_AUTH_TOKEN: Optional[str] = None
 

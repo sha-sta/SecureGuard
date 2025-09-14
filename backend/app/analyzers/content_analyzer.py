@@ -3,6 +3,7 @@ import json
 import logging
 import asyncio
 from datetime import datetime
+
 try:
     from google import genai
 except ImportError:
@@ -20,7 +21,7 @@ class GeminiAnalysis(BaseModel):
     risk_level: Literal["LOW", "MEDIUM", "HIGH"]
     confidence: int
     suspicious_elements: List[str]
-    explanation: str
+    explanation: List[str]
 
 
 class ContentAnalyzer:
@@ -62,8 +63,8 @@ class ContentAnalyzer:
             Please provide a structured analysis with:
             1. Risk level assessment (LOW, MEDIUM, HIGH)
             2. Confidence percentage (0-100)
-            3. Specific suspicious elements found
-            4. Brief explanation of the assessment (tailored towards nontechnical boomers) with bullet points
+            3. Specific suspicious elements found (array of strings)
+            4. Explanation as an array of bullet points (each string should be a complete sentence explaining one aspect)
 
             Focus on indicators like:
             - Urgency language ("act now", "limited time")
@@ -73,7 +74,8 @@ class ContentAnalyzer:
             - Grammar and spelling inconsistencies
             - Unusual sender behavior or context
 
-            But also consider context and subtle cues, for example, does the request a casual message from a known contact?
+            For the explanation array, provide 2-4 bullet points that explain your analysis in simple terms.
+            Each bullet point should be a complete sentence explaining one specific finding.
             
             Return a JSON array with one analysis object matching the GeminiAnalysis schema.
             """
@@ -95,12 +97,34 @@ class ContentAnalyzer:
                     score = self._confidence_to_score(
                         analysis.confidence, analysis.risk_level
                     )
+
+                    # Format explanation as bullet points
+                    if isinstance(analysis.explanation, list) and analysis.explanation:
+                        bullet_points = []
+                        for point in analysis.explanation:
+                            # Clean up the point and ensure it doesn't already start with bullet
+                            clean_point = point.strip()
+                            if not clean_point.startswith(
+                                "•"
+                            ) and not clean_point.startswith("-"):
+                                bullet_points.append(f"• {clean_point}")
+                            else:
+                                bullet_points.append(clean_point)
+                        formatted_explanation = "\n".join(bullet_points)
+                    else:
+                        # Fallback for non-list explanations
+                        formatted_explanation = (
+                            f"• {analysis.explanation}"
+                            if analysis.explanation
+                            else "• No specific analysis available"
+                        )
+
                     risk_factors.append(
                         RiskFactor(
                             category="CONTENT",
                             risk=analysis.risk_level,
                             score=score,
-                            description=f"AI Analysis: {analysis.explanation}",
+                            description=f"\n{formatted_explanation}",
                             details=f"Confidence: {analysis.confidence}%, Elements: {', '.join(analysis.suspicious_elements[:3])}",
                         )
                     )
